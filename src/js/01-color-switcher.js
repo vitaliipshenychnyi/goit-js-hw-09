@@ -1,4 +1,4 @@
-import getRandomHexColor from './moduls/color';
+import getRandomHexColor from './moduls_01/color';
 
 const refs = {
   startBtnEl: document.querySelector('button[data-start]'),
