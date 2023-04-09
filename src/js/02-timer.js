@@ -17,6 +17,8 @@ const refs = {
   timerDivEl: document.querySelector('.timer'), // для опису функціоналу таймеру
 };
 
+let futureTime = 0;
+
 // Налаштування бібліотеки flatpickr
 const options = {
   enableTime: true,
@@ -25,7 +27,7 @@ const options = {
   minuteIncrement: 1,
 
   onClose(selectedDates) {
-    const futureTime = selectedDates[0].getTime(); // отримуємо вибраний час
+    futureTime = selectedDates[0].getTime(); // отримуємо вибраний час
     if (futureTime < options.defaultDate) {
       refs.startBtnEl.setAttribute('disabled', 'disabled');
       Notiflix.Notify.failure('Please choose a date in the future');
