@@ -25,7 +25,7 @@ const options = {
   minuteIncrement: 1,
 
   onClose(selectedDates) {
-    futureTime = selectedDates[0].getTime(); // отримуємо вибраний час
+    const futureTime = selectedDates[0].getTime(); // отримуємо вибраний час
     if (futureTime < options.defaultDate) {
       refs.startBtnEl.setAttribute('disabled', 'disabled');
       Notiflix.Notify.failure('Please choose a date in the future');
