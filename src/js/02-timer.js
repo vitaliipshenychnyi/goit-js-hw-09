@@ -1,24 +1,21 @@
 import flatpickr from 'flatpickr';
 import Notiflix from 'notiflix';
 import 'flatpickr/dist/flatpickr.min.css';
-import convertMs from './moduls/convert-time';
-import addLeadingZero from './moduls/add-zero';
-import { description } from './moduls/description-timer'; // для опису функціоналу
+import convertMs from './moduls_02/convert_ms';
+import addLeadingZero from './moduls_02/add_zero_start';
+// Додаткова розмітка для опису функціоналу таймеру
+import { description } from './moduls_02/description_countdown';
 
-// Збірка зміних
+// Об'єкт зі змінними
 const refs = {
   inputEl: document.querySelector('#datetime-picker'),
-  btnEl: document.querySelector('button[data-start]'),
-  dayEl: document.querySelector('.value[data-days]'),
-  hourEl: document.querySelector('.value[data-hours]'),
-  minutEl: document.querySelector('.value[data-minutes]'),
-  secondEl: document.querySelector('.value[data-seconds]'),
-  timerEl: document.querySelector('.timer'), // для опису функціоналу
+  startBtnEl: document.querySelector('button[data-start]'),
+  daysValueEl: document.querySelector('.value[data-days]'),
+  hoursValueEl: document.querySelector('.value[data-hours]'),
+  minutesValueEl: document.querySelector('.value[data-minutes]'),
+  secondsValueEl: document.querySelector('.value[data-seconds]'),
+  timerDivEl: document.querySelector('.timer'), // для опису функціоналу таймеру
 };
-
-refs.btnEl.setAttribute('disabled', 'disabled');
-let futureTime = 0;
-let idTimeout = 0;
 
 // Налаштування бібліотеки flatpickr
 const options = {
@@ -28,30 +25,17 @@ const options = {
   minuteIncrement: 1,
 
   onClose(selectedDates) {
-    futureTime = selectedDates[0].getTime();
-
-    // Перевірка вибраної дати та розблокування кнопки Start
-    if (futureTime > options.defaultDate) {
-      refs.btnEl.removeAttribute('disabled');
-
-      // Функція, яка перевіряє залишок часу перед натискання на клавішу Start
-      idTimeout = setTimeout(() => {
-        refs.btnEl.setAttribute('disabled', 'disabled');
-        Notiflix.Notify.warning(
-          'Time out! Please choose a new date in the future'
-        );
-      }, futureTime - Date.now());
-    } else if (Math.abs(futureTime - options.defaultDate) < 100000) {
-      Notiflix.Notify.info('You are do not choose a date');
-      return;
-    } else {
-      refs.btnEl.setAttribute('disabled', 'disabled');
+    futureTime = selectedDates[0].getTime(); // отримуємо вибраний час
+    if (futureTime < options.defaultDate) {
+      refs.startBtnEl.setAttribute('disabled', 'disabled');
       Notiflix.Notify.failure('Please choose a date in the future');
+    } else {
+      refs.startBtnEl.removeAttribute('disabled');
     }
   },
 };
 
-// Ініціалізація бібліотеки flatpickr
+// Ініціалізація бібліотеки flatpickr та позиціонування
 flatpickr(refs.inputEl, options);
 Notiflix.Notify.init({
   width: '280px',
@@ -60,53 +44,57 @@ Notiflix.Notify.init({
   opacity: 1,
 });
 
-// Створення класу таймеру зворотнього відліку
-class Countdown {
-  constructor({ timeTable }) {
-    this.idInterval = null;
-    this.timeTable = timeTable;
+// початкове блокування кнопки Start
+refs.startBtnEl.setAttribute('disabled', 'disabled');
+
+// Оброблювач подій на кнопці Start
+refs.startBtnEl.addEventListener('click', countdown);
+
+function countdown() {
+  refs.startBtnEl.setAttribute('disabled', 'disabled');
+  refs.inputEl.setAttribute('disabled', 'disabled');
+
+  // умова наявності залишку часу після його вибору
+  if (futureTime < Date.now()) {
+    refs.inputEl.removeAttribute('disabled');
+    Notiflix.Notify.info('Time out! Please choose a new date in the future');
+    return;
   }
 
-  start() {
-    refs.btnEl.setAttribute('disabled', 'disabled');
-    refs.inputEl.setAttribute('disabled', 'disabled');
-    clearTimeout(idTimeout);
-    this.idInterval = setInterval(() => {
-      const currentTime = Date.now(); // отримуємо поточний час
-      const ms = futureTime - currentTime; // вираховуємо час до вибраного від поточного
-      const time = convertMs(ms); // конвертуємо мілісекунди у формат Д:Ч:Х:С
-      this.timeTable(time); // оновлюємо значення на екрані
+  // запуск таймеру
+  const intervalId = setInterval(() => {
+    const currentTime = Date.now();
+    const restTime = futureTime - currentTime;
+    const convertTime = convertMs(restTime);
+    updateTime(convertTime);
 
-      if (ms < 1000) {
-        refs.inputEl.removeAttribute('disabled');
-        clearInterval(this.idInterval); // очищаємо виконання функції лічильника
-        Notiflix.Notify.success('Time out!!!');
-        return;
-      }
-    }, 1000);
-  }
+    // умова зміни кольору лічильника
+    if (restTime < 60000) {
+      refs.timerDivEl.classList.add('last');
+    }
+
+    // умова зупинки таймеру
+    if (restTime < 1000) {
+      clearInterval(intervalId);
+      refs.inputEl.removeAttribute('disabled');
+      refs.timerDivEl.classList.remove('last');
+      Notiflix.Notify.success('Success!!!');
+    }
+  }, 1000);
 }
-// Створення таймеру із даними для виводу на екран лічильника часу
-const timerOut = new Countdown({
-  timeTable: updateTime,
-});
 
 // Функція відтворення таймеру на еркані
 function updateTime({ days, hours, minutes, seconds }) {
-  refs.dayEl.textContent = addLeadingZero(days);
-  refs.hourEl.textContent = addLeadingZero(hours);
-  refs.minutEl.textContent = addLeadingZero(minutes);
-  refs.secondEl.textContent = addLeadingZero(seconds);
+  refs.daysValueEl.textContent = addLeadingZero(days);
+  refs.hoursValueEl.textContent = addLeadingZero(hours);
+  refs.minutesValueEl.textContent = addLeadingZero(minutes);
+  refs.secondsValueEl.textContent = addLeadingZero(seconds);
 }
 
-// Оброблювач подій на кнопці для запуску таймеру
-refs.btnEl.addEventListener('click', timerOut.start.bind(timerOut));
-
-// Пояснення щодо перевірок лічильника
+// Доддавання розмітка для опису функціоналу таймеру
 document.addEventListener('DOMContentLoaded', descriptionCountdownTimer);
-
 function descriptionCountdownTimer() {
   setTimeout(() => {
-    refs.timerEl.insertAdjacentHTML('afterend', description);
+    refs.timerDivEl.insertAdjacentHTML('afterend', description);
   }, 1500);
 }
