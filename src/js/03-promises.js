@@ -16,7 +16,6 @@ formEl.addEventListener('submit', event => {
           Notiflix.Notify.success(
             `✅ Fulfilled promise ${position} in ${delay}ms`
           );
-          //   console.log(`✅ Fulfilled promise ${position} in ${delay}ms`);
         }, delay);
       })
       .catch(({ position, delay }) => {
@@ -24,7 +23,6 @@ formEl.addEventListener('submit', event => {
           Notiflix.Notify.failure(
             `❌ Rejected promise ${position} in ${delay}ms`
           );
-          //   console.log(`❌ Rejected promise ${position} in ${delay}ms`);
         }, delay);
       });
     delay += step;
