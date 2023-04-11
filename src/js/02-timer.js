@@ -1,6 +1,6 @@
 import flatpickr from 'flatpickr';
-import Notiflix from 'notiflix';
 import 'flatpickr/dist/flatpickr.min.css';
+import Notiflix from 'notiflix';
 import convertMs from './moduls_02/convert_ms';
 import addLeadingZero from './moduls_02/add_zero_start';
 // Додаткова розмітка для опису функціоналу таймеру
