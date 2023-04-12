@@ -17,14 +17,20 @@ formEl.addEventListener('submit', event => {
             `✅ Fulfilled promise ${position} in ${delay}ms`
           );
         }, delay);
-      })
-      .catch(({ position, delay }) => {
+      },({ position, delay }) => {
         setTimeout(() => {
-          Notiflix.Notify.failure(
+                    Notiflix.Notify.failure(
             `❌ Rejected promise ${position} in ${delay}ms`
           );
         }, delay);
-      });
+      } )
+      // .catch(({ position, delay }) => {
+      //   setTimeout(() => {
+      //     Notiflix.Notify.failure(
+      //       `❌ Rejected promise ${position} in ${delay}ms`
+      //     );
+      //   }, delay);
+      // });
     delay += step;
   }
 });
